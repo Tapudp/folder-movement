@@ -1,0 +1,1 @@
+export const DEFAULT_OBJECT_TYPES = ['folder', 'video'];
