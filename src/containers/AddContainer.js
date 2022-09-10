@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from '../components/Modal';
-import { DEFAULT_OBJECT_TYPES } from '../constants';
+import { DEFAULT_FILE_DETAILS, DEFAULT_OBJECT_TYPES } from '../constants';
 import { useAppContext } from '../context-store';
 
 const Wrapper = styled.div`
@@ -35,17 +35,38 @@ const StyledSelect = styled.select`
     padding: 10px;
 `;
 
+const ErrorBanner = styled.div`
+    background-color: ${(props) => props.bannerColor};
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 15px;
+`;
+
+
 
 export default function AddContainer() {
     const [show, toggle] = useState(false);
-    const [itemDetails, setItemDetails] = useState({
-        fileName: '',
-        fileContent: '',
-        fileType: 'folder',
-    });
+    const [err, setErr] = useState('');
+    const [itemDetails, setItemDetails] = useState(() => DEFAULT_FILE_DETAILS);
 
     const { state, setState } = useAppContext();
-    console.log('<><><><> in add container', state, setState);
+
+    const openModal = () => {
+        toggle(true);
+    }
+
+    const closeModal = () => {
+        // To-Do: only delete items when the items are submitted
+        setItemDetails(() => DEFAULT_FILE_DETAILS);
+        toggle(false);
+    }
+
+    const fieldEditHandler = (e, fieldName) => {
+        if (err) {
+            setErr('');
+        }
+        setItemDetails(p => ({ ...p, [fieldName]: e.target.value }))
+    }
 
     const fileTypeChange = (e) => {
         if (e) e.stopPropagation();
@@ -53,18 +74,30 @@ export default function AddContainer() {
         setItemDetails(p => ({ ...p, fileType: e.target.value }))
     }
 
+    const submitNewObject = () => {
+        setErr('');
+        console.log("current details of the object", JSON.stringify(itemDetails));
+        const fileWithTheSameName = state.listOfFolders.find(item => item.fileName === itemDetails.fileName);
+        if (fileWithTheSameName) {
+            setErr('File already exists with this name, please try something different!');
+            return;
+        }
+        setErr('');
+        setState(p => ({ ...p, listOfFolders: [...p.listOfFolders, itemDetails] }));
+        closeModal();
+    }
+
     return <Wrapper>
-        <button onClick={() => toggle(p => !p)}>Add to drive</button>
-        <Modal show={show} handleClose={() => toggle(false)}>
-            <h2>Create a new video object</h2>
+        <button onClick={openModal}>Add to drive</button>
+        <Modal show={show} handleClose={closeModal}>
             <CreateObjectContainer>
                 <StyledFormField>
                     <label><h4>File Name</h4></label>
-                    <StyledInput onChange={(e) => setItemDetails(p => ({ ...p, fileName: e.target.value }))} />
+                    <StyledInput value={itemDetails.fileName} onChange={(e) => fieldEditHandler(e, 'fileName')} />
                 </StyledFormField>
                 <StyledFormField>
                     <label><h4>File Content</h4></label>
-                    <StyledInput onChange={(e) => setItemDetails(p => ({ ...p, fileContent: e.target.value }))} />
+                    <StyledInput value={itemDetails.fileContent} onChange={(e) => fieldEditHandler(e, 'fileContent')} />
                 </StyledFormField>
                 <StyledFormField>
                     <label><h4>File Type</h4></label>
@@ -75,12 +108,12 @@ export default function AddContainer() {
                         ))}
                     </StyledSelect>
                 </StyledFormField>
-                <button onClick={() => {
-                    console.log("current details of the object", JSON.stringify(itemDetails));
-                    setState(p => ({ ...p, listOfFolders: [...p.listOfFolders, itemDetails] }))
-                }}>
+                <button onClick={submitNewObject} disabled={err}>
                     Submit
                 </button>
+                <ErrorBanner bannerColor={err !== '' ? '#FAA0A0' : null}>
+                    {err}
+                </ErrorBanner>
             </CreateObjectContainer>
         </Modal>
     </Wrapper>
