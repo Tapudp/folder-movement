@@ -1,13 +1,17 @@
 import React from 'react';
+import { TEMPLATE_FILES } from '../constants';
 
 const AppContext = React.createContext();
 
 function AppContextProvider(props) {
     const [state, setState] = React.useState({
-        listOfFolders: [],
+        currentPath: '/',
+        listOfFiles: TEMPLATE_FILES,
     });
+
+    const updatePathForUser = (path) => setState(p => ({ ...p, currentPath: path }));
     return (
-        <AppContext.Provider value={{ state, setState }}>
+        <AppContext.Provider value={{ state, setState, updatePathForUser }}>
             {props.children}
         </AppContext.Provider>
     )
