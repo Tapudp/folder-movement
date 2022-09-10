@@ -6,8 +6,9 @@ import { useAppContext } from '../context-store';
 
 const Wrapper = styled.div`
     display: flex;
-    padding: 10px;
-    margin: 1px;
+    padding: 10px 0px;
+    margin: 1px 4rem;
+    justify-content: flex-start;
 `;
 
 const CreateObjectContainer = styled.div`
@@ -42,14 +43,29 @@ const ErrorBanner = styled.div`
     border-radius: 15px;
 `;
 
+const AddButton = styled.div`
+    cursor: pointer;
+    padding: 10px;
+    background-color: #8852CC;
+    color: #fff;
+    font-weight: 600;
+`;
 
+const PathWrapper = styled.div`
+    padding: 10px;
+    background-color: ${props => props.onClick ? '#BC5C5C' : '#C552CC'};
+    color: #fff;
+    font-weight: 600;
+    margin: 0 10px 0 0;
+    cursor: ${props => props.onClick ? 'pointer' : 'default'};
+`;
 
 export default function AddContainer() {
     const [show, toggle] = useState(false);
     const [err, setErr] = useState('');
     const [itemDetails, setItemDetails] = useState(() => DEFAULT_FILE_DETAILS);
 
-    const { state, setState } = useAppContext();
+    const { state, setState, updatePathForUser } = useAppContext();
 
     const openModal = () => {
         toggle(true);
@@ -75,20 +91,23 @@ export default function AddContainer() {
     }
 
     const submitNewObject = () => {
+        console.log('<><> while submitting the path<><>', itemDetails, state.currentPath);
+        setItemDetails(p => ({ ...p, path: state.currentPath }))
         setErr('');
-        console.log("current details of the object", JSON.stringify(itemDetails));
-        const fileWithTheSameName = state.listOfFolders.find(item => item.fileName === itemDetails.fileName);
+        const fileWithTheSameName = state.listOfFiles.find(item => item.fileName === itemDetails.fileName);
         if (fileWithTheSameName) {
             setErr('File already exists with this name, please try something different!');
             return;
         }
         setErr('');
-        setState(p => ({ ...p, listOfFolders: [...p.listOfFolders, itemDetails] }));
+        setState(p => ({ ...p, listOfFiles: [...p.listOfFiles, itemDetails] }));
         closeModal();
     }
 
     return <Wrapper>
-        <button onClick={openModal}>Add to drive</button>
+        {state.currentPath !== '/' && <PathWrapper onClick={() => updatePathForUser('/')}>{'<-'} Go back to root</PathWrapper>}
+        <PathWrapper>Current path : {state.currentPath === '/' ? 'root' : state.currentPath}</PathWrapper>
+        <AddButton onClick={openModal}>Add to drive</AddButton>
         <Modal show={show} handleClose={closeModal}>
             <CreateObjectContainer>
                 <StyledFormField>

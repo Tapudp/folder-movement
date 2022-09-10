@@ -36,10 +36,13 @@ const ModalWrapper = styled.div`
     justify-content: space-between;
 
     & > button {
-      padding: 5px;
+      padding: 5px 10px;
+      font-weight: 900;
+      font-size: 20px;
       margin: 0 20px;
       border: 2px solid #000;
-      background-color: #FF0000;
+      background-color: #E3735E;
+      color: #fff;
       text-align: center;
     }
   }
