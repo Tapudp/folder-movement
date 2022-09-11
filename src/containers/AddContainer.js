@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import styled from 'styled-components';
+
 import Modal from '../components/Modal';
 import { DEFAULT_FILE_DETAILS, DEFAULT_OBJECT_TYPES } from '../constants';
 import { useAppContext } from '../context-store';
@@ -65,7 +67,7 @@ export default function AddContainer() {
     const [err, setErr] = useState('');
     const [itemDetails, setItemDetails] = useState(() => DEFAULT_FILE_DETAILS);
 
-    const { state, setState, updatePathForUser } = useAppContext();
+    const { state, updatePathForUser, addFileToDrive } = useAppContext();
 
     const openModal = () => {
         toggle(true);
@@ -91,22 +93,29 @@ export default function AddContainer() {
     }
 
     const submitNewObject = () => {
-        console.log('<><> while submitting the path<><>', itemDetails, state.currentPath);
-        setItemDetails(p => ({ ...p, path: state.currentPath }))
         setErr('');
         const fileWithTheSameName = state.listOfFiles.find(item => item.fileName === itemDetails.fileName);
         if (fileWithTheSameName) {
             setErr('File already exists with this name, please try something different!');
             return;
         }
+
+        const newPathId = uuidv4();
+        const fileDetailsToPush = { ...itemDetails, parentPath: state.currentPath, parentPathId: state.currentPathId, ownPathId: newPathId };
         setErr('');
-        setState(p => ({ ...p, listOfFiles: [...p.listOfFiles, itemDetails] }));
+        addFileToDrive(fileDetailsToPush);
         closeModal();
     }
 
     return <Wrapper>
-        {state.currentPath !== '/' && <PathWrapper onClick={() => updatePathForUser('/')}>{'<-'} Go back to root</PathWrapper>}
-        <PathWrapper>Current path : {state.currentPath === '/' ? 'root' : state.currentPath}</PathWrapper>
+        {state.currentPath !== state.rootPath &&
+            <PathWrapper
+                onClick={() => updatePathForUser(state.rootPath, state.rootPathId)}
+            >
+                {'<-'} Go back to root
+            </PathWrapper>
+        }
+        <PathWrapper>Current path : {state.currentPath === state.rootPath ? 'root' : state.currentPath}</PathWrapper>
         <AddButton onClick={openModal}>Add to drive</AddButton>
         <Modal show={show} handleClose={closeModal}>
             <CreateObjectContainer>

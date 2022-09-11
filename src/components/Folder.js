@@ -7,15 +7,15 @@ const FolderWrapper = styled.div`
     grid-template-rows: 40px 40px 40px;
     padding: 1rem;
     height: 1fr;
-    cursor: pointer;
+    cursor: ${props => props.onClick ? 'pointer' : 'default'};
 `;
 
 export default function Folder({ fileName, fileContent, fileType, switchPath }) {
     return (
-        <FolderWrapper onClick={() => switchPath()}>
-            <h4>{fileName || ''}</h4>
-            <h6>{fileContent || ''}</h6>
-            <div>{fileType || ''}</div>
+        <FolderWrapper onClick={fileType !== 'video' ? () => switchPath() : null}>
+            <h2>{fileName || ''}</h2>
+            <p>{fileContent || ''}</p>
+            <h5>{fileType || ''}</h5>
         </FolderWrapper>
     )
 }
